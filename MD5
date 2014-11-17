@@ -1,0 +1,12 @@
+49b7e2df4f2facce8536f9c0ff3785d9 *DESCRIPTION
+afd88e8ada25622fe6407443790db3d9 *NAMESPACE
+c335151c6340696ae591ceb652112801 *R/aaa.R
+8ac7ddf162fefcd62cccd66c8a86303c *R/ecv.R
+f77ea2495be5882cae96a354ab32593f *R/integrator_regression_select_minavgerr.R
+8c778a28338c45a24bd7cc8cb5c17834 *R/integrator_regression_select_minerr.R
+9a00d48da273d61930f9ea5c1078ba1c *man/Regression.Select.MinAvgErr.Config-class.Rd
+cb6e0f095dd5caedf35d65c9919500b9 *man/Regression.Select.MinAvgErr.FitObj-class.Rd
+49154192cff065554bcff69bb03b3a13 *man/ecv.regression.Rd
+1a9b94c9d58b8022118f80c59f34b01a *man/ecv.regression.baselearner.control.Rd
+2249fd272f2e743c8f7a0ecc6af652a9 *man/ecv.save.Rd
+3dd66899894bb593d820f289cb5d1c32 *man/plot.ecv.regression.Rd
