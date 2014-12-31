@@ -31,6 +31,7 @@ Mansour T.A. Sharabiani, Alireza S. Mahani
 \code{\link{ecv.regression}}
 }
 \examples{
+\dontrun{
 data(servo)
 myformula <- class~motor+screw+pgain+vgain
 perc.train <- 0.7
@@ -43,5 +44,6 @@ ecv.save(est, "somefile")
 rm(est) # alternatively, exit and re-launch R session
 est.loaded <- ecv.load("somefile")
 newpred <- predict(est.loaded, data.predict)
+}
 }
 

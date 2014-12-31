@@ -1,0 +1,4 @@
+Changes in version 0.7.1
+  * Enclosed example section in ecv.save.Rd in 'NOT RUN' pragmas, due to potential issues with file methods running on Windows test servers of CRAN (all examples successfully run on package maintainer's Windows laptop)
+
+
