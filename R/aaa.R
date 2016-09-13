@@ -3,7 +3,7 @@
                     fields="Version")
   packageStartupMessage(paste(pkgname, RFver))
   #packageStartupMessage("Ensemble Learning and Integration")
-  packageStartupMessage("Heart and Lung Institute, Imperial College London &\nScientific Computing Group, Sentrana Inc.")
+  packageStartupMessage("School of Public Health, Imperial College London &\nScientific Computing Group, Sentrana Inc.")
   #packageStartupMessage("Loading packages: gbm,nnet,e1071,randomForest,kknn,glmnet,doParallel")
 }
 

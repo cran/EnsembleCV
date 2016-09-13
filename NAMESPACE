@@ -24,7 +24,10 @@ S3method(summary, ecv.regression)
 S3method(print, summary.ecv.regression)
 S3method(plot, ecv.regression)
 
-
+importFrom("graphics", "abline", "plot")
+importFrom("methods", "new")
+importFrom("stats", "predict")
+importFrom("utils", "tar", "untar")
 
 
 

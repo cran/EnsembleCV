@@ -6,7 +6,7 @@
 Custom Functions for Disk I/O in \pkg{EnsembleCV} Package
 }
 \description{
-These functions must be used in conjunction with \code{filemethod=TRUE} flag during the \code{ecv.regression} call.
+These functions can be used whether \code{filemethod} flag is set to \code{TRUE} or \code{FALSE} during the \code{epcreg} call. Note that \code{ecv.load} `returns' the estimation object (in contrast to the standard \code{load} method).
 }
 \usage{
 ecv.save(obj, file)
@@ -38,7 +38,16 @@ perc.train <- 0.7
 index.train <- sample(1:nrow(servo), size = round(perc.train*nrow(servo)))
 data.train <- servo[index.train,]
 data.predict <- servo[-index.train,]
+
 est <- ecv.regression(myformula, data.train, ncores=2, filemethod=TRUE
+  , baselearner.control=ecv.regression.baselearner.control(baselearners="knn"))
+ecv.save(est, "somefile")
+rm(est) # alternatively, exit and re-launch R session
+est.loaded <- ecv.load("somefile")
+newpred <- predict(est.loaded, data.predict)
+
+# can also be used with filemethod set to FALSE
+est <- ecv.regression(myformula, data.train, ncores=2, filemethod=FALSE
   , baselearner.control=ecv.regression.baselearner.control(baselearners="knn"))
 ecv.save(est, "somefile")
 rm(est) # alternatively, exit and re-launch R session

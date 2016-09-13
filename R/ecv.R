@@ -1,4 +1,4 @@
-ecv.regression.baselearner.control <- function(baselearners=c("nnet","rf","svm","gbm","knn")
+ecv.regression.baselearner.control <- function(baselearners=c("nnet", "rf", "svm", "gbm", "knn", "penreg")
   , baselearner.configs=make.configs(baselearners, type="regression"), npart=1, nfold=5) {
     return (list(configs=baselearner.configs, npart=npart, nfold=nfold))
 }
@@ -12,7 +12,9 @@ ecv.set.filemethod <- function(formula, data, instance.list, type="regression") 
 ecv.regression <- function(formula, data
   , baselearner.control=ecv.regression.baselearner.control()
   , integrator.control=ecv.regression.integrator.control()
-  , ncores=1, filemethod=FALSE, print.level=1) {
+  , ncores=1, filemethod=FALSE, print.level=1
+  , preschedule = TRUE
+  , schedule.method = c("random", "as.is", "task.length"), task.length) {
   if (integrator.control$method!="default") stop("invalid CV integration method")
   ncores.max <- try(detectCores(),silent=T)
   mycall <- match.call()
@@ -27,7 +29,8 @@ ecv.regression <- function(formula, data
   if (missing(filemethod)) filemethod <- ecv.set.filemethod(formula, data, my.instance.list)
   
   if (print.level>=1) cat("CV training of base learners...\n")
-  est.baselearner.cv.batch <- Regression.CV.Batch.Fit(my.instance.list, formula, data, ncores=ncores, filemethod=filemethod, print.level=print.level)
+  est.baselearner.cv.batch <- Regression.CV.Batch.Fit(my.instance.list, formula, data, ncores=ncores, filemethod=filemethod, print.level=print.level
+                                                      , preschedule = preschedule, schedule.method = schedule.method, task.length = task.length)
   if (print.level>=1) cat("finished CV training of base learners\n")
   Xcv <- est.baselearner.cv.batch@pred
   y <- data[,all.vars(formula)[1]] # TODO: more robust way of extracting y (here and inside base learner functions)
@@ -100,77 +103,93 @@ plot.ecv.regression <- function(x, ...) {
 ## if yes, we should move these functions to EnsembleBase to make them available to other derivative packages
 
 ecv.save <- function(obj, file) {
-  if (!identical(class(obj),c("ecv.regression","ecv.file"))) stop("invalid object class (must be ecv.regression & ecv.file)") # must be edited to incorporate non-regression models
+  if (!("ecv.regression" %in% class(obj))) 
+    stop("invalid object class (must be ecv.regression)")
   if (missing(file)) stop("must provide file argument")
-  tmpfiles <- obj$est$baselearner.cv.batch@tmpfiles
-  tmpfiles.full <- obj$est$baselearner.batch@tmpfiles
-  tmpfile.new <- tempfile()
-  save(obj, file=tmpfile.new, compress=F)
-  all.files <- c(tmpfile.new, tmpfiles, tmpfiles.full)
-  all.files.basename <- basename(all.files)
+  tmpfiles <- obj$est$baselearner.cv.batch@tmpfiles # obtain names of tmp files under cv.batch learners
+  tmpfiles.full <- obj$est$baselearner.batch@tmpfiles # obtain names of tmp files under full batch learners
   
-  tmpdir <- paste0("./.", basename(tempfile("dir")),"/")
-  dir.create(tmpdir)
-  all.files.new <- paste0(tmpdir, all.files.basename)
-  file.copy(all.files, all.files.new)
-  meta <- list(filename.mainobj=all.files.basename[1], filenames.batchobj=all.files.basename[1+1:length(tmpfiles)], filenames.batchobj.full=1+length(tmpfiles)+1:length(tmpfiles.full))
-  save(meta, file=paste0(tmpdir, "meta"), compress=FALSE)
-
-  tar(file, files=tmpdir, compression="gzip")
-  unlink(tmpdir, recursive=TRUE)
+  if (is.null(tmpfiles)) { # ordinary save
+    save(obj, file = file)
+  } else {
+    tmpfile.new <- tempfile() # create new tmp file name
+    save(obj, file=tmpfile.new, compress=F) # save estimation object to tmp file
+    all.files <- c(tmpfile.new, tmpfiles, tmpfiles.full) # consolidate names of tmp files for object as well as tmp files for cv and full batch learners
+    all.files.basename <- basename(all.files) # extract basenames of all tmp files to be saved
+    
+    tmpdir <- paste0("./.", basename(tempfile("dir")),"/") # define a temp directory
+    dir.create(tmpdir) # create the tmp directory
+    all.files.new <- paste0(tmpdir, all.files.basename) # construct full path to all files
+    file.copy(all.files, all.files.new) # copy files to tmp directory
+    meta <- list(filename.mainobj=all.files.basename[1], filenames.batchobj=all.files.basename[1+1:length(tmpfiles)]
+                 , filenames.batchobj.full=1+length(tmpfiles)+1:length(tmpfiles.full)) # create a list of meta-data
+    save(meta, file=paste0(tmpdir, "meta"), compress=FALSE) # save meta-data list to tmp directory, under file "meta"
+  
+    tar(file, files=tmpdir, compression="gzip") # write content of "tmpdir" to "file"
+    unlink(tmpdir, recursive=TRUE)
+  }
 }
 
 ecv.load <- function(file) {
-  filepaths <- untar(file, list=T)
-  basenames <- basename(filepaths)
-  dirnames <- dirname(filepaths)
-  if (length(unique(dirnames))>1) stop("unexpected multiple directories in tar filepaths")
-  metafile.index <- which(basenames=="meta")
+  env <- new.env()
+  loadret <- suppressWarnings(try(load(file, envir = env), silent = TRUE))
   
-  extdir <- dirnames[1] # this is where untar will extract the files to
-  untar(file)
-  meta <- NULL # to overcome codetools error: "no visible binding for meta"
-  load(filepaths[metafile.index]) # this will load "meta"
-  mainfile.index <- which(basenames==meta$filename.mainobj)
-  load(filepaths[mainfile.index]) # this will load "obj"
-  if (!identical(class(obj),c("ecv.regression","ecv.file"))) stop("invalid object class (must be ecv.regression & ecv.file)") # extend later to allow for non-regression models
+  if (class(loadret) == "try-error") { # filemethod load
+    filepaths <- untar(file, list=T)
+    basenames <- basename(filepaths)
+    dirnames <- dirname(filepaths)
+    if (length(unique(dirnames))>1) stop("unexpected multiple directories in tar filepaths")
+    metafile.index <- which(basenames=="meta")
+    
+    extdir <- dirnames[1] # this is where untar will extract the files to
+    untar(file)
+    meta <- NULL # to overcome codetools error: "no visible binding for meta"
+    load(filepaths[metafile.index]) # this will load "meta"
+    mainfile.index <- which(basenames==meta$filename.mainobj)
+    load(filepaths[mainfile.index]) # this will load "obj"
+    if (!identical(class(obj),c("ecv.regression","ecv.file"))) stop("invalid object class (must be ecv.regression & ecv.file)") # extend later to allow for non-regression models
+    
+    basenames.ordered <- basename(obj$est$baselearner.cv.batch@tmpfiles)
+    basenames.ordered.full <- basename(obj$est$baselearner.batch@tmpfiles)
+    #if (!identical(sort(basenames.ordered),sort(basenames[-c(metafile.index,mainfile.index)]))) stop("basenames mismatch")
+    filepaths.ordered <- paste(extdir, basenames.ordered, sep="/")
+    filepaths.ordered.full <- paste(extdir, basenames.ordered.full, sep="/")
+    
+    # copy batch files to new tempfiles in tempdir
+    tmpfiles.new <- tempfile(rep("file", length(filepaths.ordered)))
+    # replaced file.rename with file.copy and unlink to handle cross-device cases (where . and R tmp directories are on different devices)
+    file.copy(from=filepaths.ordered, to=tmpfiles.new)
+    unlink(filepaths.ordered, recursive=TRUE)
+    
+    tmpfiles.new.full <- tempfile(rep("file", length(filepaths.ordered.full)))
+    # replaced file.rename with file.copy and unlink to handle cross-device cases (where . and R tmp directories are on different devices)
+    file.copy(from=filepaths.ordered.full, to=tmpfiles.new.full)
+    unlink(filepaths.ordered.full, recursive=TRUE)
   
-  basenames.ordered <- basename(obj$est$baselearner.cv.batch@tmpfiles)
-  basenames.ordered.full <- basename(obj$est$baselearner.batch@tmpfiles)
-  #if (!identical(sort(basenames.ordered),sort(basenames[-c(metafile.index,mainfile.index)]))) stop("basenames mismatch")
-  filepaths.ordered <- paste(extdir, basenames.ordered, sep="/")
-  filepaths.ordered.full <- paste(extdir, basenames.ordered.full, sep="/")
-  
-  # copy batch files to new tempfiles in tempdir
-  tmpfiles.new <- tempfile(rep("file", length(filepaths.ordered)))
-  # replaced file.rename with file.copy and unlink to handle cross-device cases (where . and R tmp directories are on different devices)
-  file.copy(from=filepaths.ordered, to=tmpfiles.new)
-  unlink(filepaths.ordered, recursive=TRUE)
-  
-  tmpfiles.new.full <- tempfile(rep("file", length(filepaths.ordered.full)))
-  # replaced file.rename with file.copy and unlink to handle cross-device cases (where . and R tmp directories are on different devices)
-  file.copy(from=filepaths.ordered.full, to=tmpfiles.new.full)
-  unlink(filepaths.ordered.full, recursive=TRUE)
-
-  unlink(extdir, recursive=TRUE)
-  
-  obj$est$baselearner.cv.batch@tmpfiles <- tmpfiles.new
-  n.instance <- length(obj$est$baselearner.cv.batch@instance.list@instances)
-  for (i in 1:n.instance) {
-    partid <- obj$est$baselearner.cv.batch@instance.list@instances[[1]]@partid
-    nfold <- length(unique(obj$est$baselearner.cv.batch@instance.list@partitions[,partid]))
-    for (j in 1:nfold) {
-      obj$est$baselearner.cv.batch@fitobj.list[[i]]@fitobj.list[[j]]@est <- tmpfiles.new[obj$est$baselearner.cv.batch@tmpfiles.index.list$start[i]+j-1]
+    unlink(extdir, recursive=TRUE)
+    
+    obj$est$baselearner.cv.batch@tmpfiles <- tmpfiles.new
+    n.instance <- length(obj$est$baselearner.cv.batch@instance.list@instances)
+    for (i in 1:n.instance) {
+      partid <- obj$est$baselearner.cv.batch@instance.list@instances[[1]]@partid
+      nfold <- length(unique(obj$est$baselearner.cv.batch@instance.list@partitions[,partid]))
+      for (j in 1:nfold) {
+        obj$est$baselearner.cv.batch@fitobj.list[[i]]@fitobj.list[[j]]@est <- tmpfiles.new[obj$est$baselearner.cv.batch@tmpfiles.index.list$start[i]+j-1]
+      }
     }
+    
+    obj$est$baselearner.batch@tmpfiles <- tmpfiles.new.full
+    n.config <- length(obj$est$baselearner.batch@config.list)
+    for (i in 1:n.config) {
+      obj$est$baselearner.batch@fitobj.list[[i]]@est <- tmpfiles.new.full[i]
+    }
+    
+    return (obj)
+  } else { # ordinary load
+    loadedObjects <- objects(env, all.names = TRUE)
+    stopifnot(length(loadedObjects) == 1)
+    return (env[[loadedObjects]])
   }
-  
-  obj$est$baselearner.batch@tmpfiles <- tmpfiles.new.full
-  n.config <- length(obj$est$baselearner.batch@config.list)
-  for (i in 1:n.config) {
-    obj$est$baselearner.batch@fitobj.list[[i]]@est <- tmpfiles.new.full[i]
-  }
-  
-  return (obj)
 }
 
 

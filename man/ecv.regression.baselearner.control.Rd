@@ -10,7 +10,7 @@ Function \code{ecv.regression.baselearner.control} sets up the base learners use
 }
 \usage{
 ecv.regression.baselearner.control(
-  baselearners = c("nnet","rf","svm","gbm","knn")
+  baselearners = c("nnet", "rf", "svm", "gbm", "knn", "penreg")
   , baselearner.configs = make.configs(baselearners, type = "regression")
   , npart = 1, nfold = 5
 )
@@ -18,7 +18,7 @@ ecv.regression.integrator.control(errfun=rmse.error, method=c("default"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{baselearners}{Names of base learners used. Currently, regression options available are Neural Network ("nnet"), Random Forest ("rf"), Support Vector Machine ("svm"), Gradient Boosting Machine ("gbm"), and K-Nearest Neighbors ("knn").}
+  \item{baselearners}{Names of base learners used. Currently, regression options available are Neural Network ("nnet"), Random Forest ("rf"), Support Vector Machine ("svm"), Gradient Boosting Machine ("gbm"), and K-Nearest Neighbors ("knn"), Penalized Rergession ("penreg") and Bayesian Additive Regression Trees ("bart"). The last learner is not included by default, due to significantly longer training time needed by it ("bart") compared to other learners.}
   \item{baselearner.configs}{List of base learner configurations. Default is to call \code{\link[EnsembleBase]{make.configs}} from package \pkg{EnsembleBase}.}
   \item{npart}{Number of partitions to train each base learner configuration in a CV scheme.}
   \item{nfold}{Number of folds within each data partition.}
