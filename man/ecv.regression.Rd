@@ -35,10 +35,10 @@ ecv.regression(formula, data
 An object of classes \code{ecv.regression} (if \code{filemethod==TRUE}, also has class of \code{ecv.file}), a list with the following elements:
   \item{call}{Copy of function call.}
   \item{formula}{Copy of formula argument in function call.}
-  \item{instance.list}{An object of class \code{\linkS4class{Instance.List}}, containing all permutations of base learner configurations and random data partitions generated in the body of the function.}
+  \item{instance.list}{An object of class \code{\link[EnsembleBase]{Instance.List-class}}, containing all permutations of base learner configurations and random data partitions generated in the body of the function.}
   \item{integrator.config}{Copy of configuration object passed to the integrator. Object of class \code{\linkS4class{Regression.Select.MinAvgErr.Config}}.}
   \item{method}{Integration method. Currently, only "default" is supported.}
-  \item{est}{A list with these elements: 1) \code{baselearner.cv.batch}, an object of class \code{\linkS4class{Regression.CV.Batch.FitObj}} containing the fit object from CV batch training of base learners; 2) \code{baselearner.batch}, an object of class \code{\linkS4class{Regression.Batch.FitObj}} containing the fit object from batch training of base learners on entire \code{data}; 3) \code{integrator}, an object of class \code{\linkS4class{Regression.Select.MinAvgErr.FitObj}} containing the fit object returned by the integrator.}
+  \item{est}{A list with these elements: 1) \code{baselearner.cv.batch}, an object of class \code{\link[EnsembleBase]{Regression.CV.Batch.FitObj-class}} containing the fit object from CV batch training of base learners; 2) \code{baselearner.batch}, an object of class \code{\link[EnsembleBase]{Regression.Batch.FitObj-class}} containing the fit object from batch training of base learners on entire \code{data}; 3) \code{integrator}, an object of class \code{\linkS4class{Regression.Select.MinAvgErr.FitObj}} containing the fit object returned by the integrator.}
   \item{y}{Copy of response variable vector.}
   \item{pred}{Within-sample prediction of the ensemble model.}
   \item{filemethod}{Copy of passed-in \code{filemethod} argument.}
@@ -49,7 +49,7 @@ Mansour T.A. Sharabiani, Alireza S. Mahani
 }
 
 \seealso{
-\code{\link{ecv.regression.baselearner.control}}, \code{\link{ecv.regression.integrator.control}}, \code{\linkS4class{Instance.List}}, \code{\linkS4class{Regression.Select.MinAvgErr.Config}}, \code{\linkS4class{Regression.CV.Batch.FitObj}}, \code{\linkS4class{Regression.Batch.FitObj}}, \code{\linkS4class{Regression.Select.MinAvgErr.FitObj}}
+\code{\link{ecv.regression.baselearner.control}}, \code{\link{ecv.regression.integrator.control}}, \code{\link[EnsembleBase]{Instance.List-class}}, \code{\linkS4class{Regression.Select.MinAvgErr.Config}}, \code{\link[EnsembleBase]{Regression.CV.Batch.FitObj-class}}, \code{\link[EnsembleBase]{Regression.Batch.FitObj-class}}, \code{\linkS4class{Regression.Select.MinAvgErr.FitObj}}
 }
 \examples{
 data(servo)

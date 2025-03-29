@@ -134,7 +134,7 @@ ecv.load <- function(file) {
   env <- new.env()
   loadret <- suppressWarnings(try(load(file, envir = env), silent = TRUE))
   
-  if (class(loadret) == "try-error") { # filemethod load
+  if (inherits(loadret, "try-error")) { # filemethod load
     filepaths <- untar(file, list=T)
     basenames <- basename(filepaths)
     dirnames <- dirname(filepaths)

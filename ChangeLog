@@ -1,3 +1,7 @@
+Changes in  version 0.9
+  * Added package anchors to external links per CRAN requirements.
+  * Addressed other items flagged by CRAN Winbuilder during testing.
+
 Changes in version 0.8
   * Added penalized regression to default list of base learners in ecv.regression.
   * Modified ecv.save and ecv.load to handle both value of filemethod.

@@ -13,12 +13,12 @@ Objects can be created by calls of the form \code{new("Regression.Select.MinAvgE
 }
 \section{Slots}{
   \describe{
-    \item{\code{instance.list}:}{Object of class \code{\linkS4class{Instance.List}}, containing a list of base learners to train.}
+    \item{\code{instance.list}:}{Object of class \code{\link[EnsembleBase]{Instance.List-class}}, containing a list of base learners to train.}
     \item{\code{errfun}:}{Object of class \code{"function"}, the error metric to use for ranking base learner performances. }
   }
 }
 \section{Extends}{
-Class \code{"\linkS4class{Regression.Select.Config}"}, directly.
+Class \code{"\link[EnsembleBase]{Regression.Select.Config-class}"}, directly.
 }
 \section{Methods}{
   \describe{

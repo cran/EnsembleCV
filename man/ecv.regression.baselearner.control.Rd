@@ -22,7 +22,7 @@ ecv.regression.integrator.control(errfun=rmse.error, method=c("default"))
   \item{baselearner.configs}{List of base learner configurations. Default is to call \code{\link[EnsembleBase]{make.configs}} from package \pkg{EnsembleBase}.}
   \item{npart}{Number of partitions to train each base learner configuration in a CV scheme.}
   \item{nfold}{Number of folds within each data partition.}
-  \item{errfun}{Error function used to compare performance of base learner configurations. Default is to use \code{\link{rmse.error}} from package \pkg{EnsembleBase}.}
+  \item{errfun}{Error function used to compare performance of base learner configurations. Default is to use \code{\link[EnsembleBase]{rmse.error}} from package \pkg{EnsembleBase}.}
   \item{method}{Integrator method. Currently, only option is "default", which uses average error for each base learner configuration across repeated CV runs to chose the best configuration.}
 }
 
@@ -37,6 +37,6 @@ Mansour T.A. Sharabiani, Alireza S. Mahani
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link[EnsembleBase]{make.configs}}, \code{\link{rmse.error}}
+\code{\link[EnsembleBase]{make.configs}}, \code{\link[EnsembleBase]{rmse.error}}
 }
 

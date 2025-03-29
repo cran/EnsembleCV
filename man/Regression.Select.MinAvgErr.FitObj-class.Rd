@@ -12,13 +12,13 @@ Objects can be created by calls of the form \code{new("Regression.Select.MinAvgE
 }
 \section{Slots}{
   \describe{
-    \item{\code{config}:}{Object of class \code{"\linkS4class{Regression.Select.Config}"}, containing the configuration supplied to the fit operation.}
+    \item{\code{config}:}{Object of class \code{"\link[EnsembleBase]{Regression.Select.Config-class}"}, containing the configuration supplied to the fit operation.}
     \item{\code{est}:}{Object of class \code{"ANY"}, containing the estimation object needed for prediction. This is a list with elements \code{config.opt} (optimal base learner configuration), \code{error.opt} (error associated with optimal configuration), and \code{errors} (vector of errors for all base learner configurations).}
-    \item{\code{pred}:}{Object of class \code{"\linkS4class{RegressionSelectPred}"}, containing the within-sample prediction, in this case the average prediction across all partitions. Note that this prediction is not used in the \code{\link{ecv.regression}} function as the ultimate training-set prediction. Instead, base learners trained on full training set (not CV style) are used for that purpose.}
+    \item{\code{pred}:}{Object of class \code{"\link[EnsembleBase]{RegressionSelectPred-class}"}, containing the within-sample prediction, in this case the average prediction across all partitions. Note that this prediction is not used in the \code{\link{ecv.regression}} function as the ultimate training-set prediction. Instead, base learners trained on full training set (not CV style) are used for that purpose.}
   }
 }
 \section{Extends}{
-Class \code{"\linkS4class{Regression.Select.FitObj}"}, directly.
+Class \code{"\link[EnsembleBase]{Regression.Select.FitObj-class}"}, directly.
 }
 %\section{Methods}{
 %No methods defined with class "Regression.Select.MinAvgErr.FitObj" in the signature.
